@@ -1,0 +1,262 @@
+-- ===================================
+-- Whater Hub💧 - Script Unificado
+-- Com Intro letra a letra
+-- ===================================
+
+-- Serviços
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
+local VirtualUser = game:GetService("VirtualUser")
+local Workspace = game:GetService("Workspace")
+
+-- Variáveis
+local savedPosition = nil
+local optimized = false
+local walkSpeedActive = false
+local defaultWalkSpeed = 16
+local elevatorActive = false
+local elevatorBlock
+local elevatorConnection
+
+-- ==============================
+-- Intro animada letra a letra
+-- ==============================
+do
+    local text = "WHATER HUB💧"
+    local IntroGui = Instance.new("ScreenGui")
+    IntroGui.Name = "IntroGui"
+    IntroGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+    local IntroFrame = Instance.new("Frame")
+    IntroFrame.Size = UDim2.new(0.8,0,0.3,0)
+    IntroFrame.Position = UDim2.new(0.1,0,0.35,0)
+    IntroFrame.BackgroundTransparency = 1
+    IntroFrame.Parent = IntroGui
+
+    local IntroLabel = Instance.new("TextLabel")
+    IntroLabel.Size = UDim2.new(1,0,1,0)
+    IntroLabel.Position = UDim2.new(0,0,0,0)
+    IntroLabel.BackgroundTransparency = 1
+    IntroLabel.Text = ""
+    IntroLabel.Font = Enum.Font.GothamBlack
+    IntroLabel.TextSize = 48
+    IntroLabel.TextColor3 = Color3.fromRGB(70,130,255)
+    IntroLabel.TextStrokeTransparency = 0.5
+    IntroLabel.TextScaled = true
+    IntroLabel.TextStrokeColor3 = Color3.fromRGB(0,0,0)
+    IntroLabel.Parent = IntroFrame
+
+    -- Velocidade em segundos por letra
+    local speed = 0.1
+
+    for i = 1,#text do
+        IntroLabel.Text = string.sub(text,1,i)
+        wait(speed)
+    end
+
+    wait(1) -- pausa 1 segundo
+
+    -- Fade out
+    for i = 1,10 do
+        IntroLabel.TextTransparency = i*0.1
+        wait(0.05)
+    end
+
+    IntroGui:Destroy()
+end
+
+-- ==============================
+-- GUI principal
+-- ==============================
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "WhaterHub"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0,330,0,330)
+MainFrame.Position = UDim2.new(0.5,-165,0.5,-165)
+MainFrame.BackgroundColor3 = Color3.fromRGB(25,25,30)
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0,12)
+
+local TopBar = Instance.new("Frame", MainFrame)
+TopBar.Size = UDim2.new(1,0,0,35)
+TopBar.BackgroundColor3 = Color3.fromRGB(40,40,60)
+Instance.new("UICorner", TopBar).CornerRadius = UDim.new(0,12)
+
+local Title = Instance.new("TextLabel", TopBar)
+Title.Text = "Whater Hub💧"
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 18
+Title.TextColor3 = Color3.fromRGB(255,255,255)
+Title.BackgroundTransparency = 1
+Title.Position = UDim2.new(0,10,0,0)
+Title.Size = UDim2.new(1,-80,1,0)
+Title.TextXAlignment = Enum.TextXAlignment.Left
+
+local MinimizeBtn = Instance.new("TextButton", TopBar)
+MinimizeBtn.Text = "-"
+MinimizeBtn.Size = UDim2.new(0,35,0,35)
+MinimizeBtn.Position = UDim2.new(1,-70,0,0)
+MinimizeBtn.TextColor3 = Color3.fromRGB(255,255,255)
+MinimizeBtn.TextSize = 20
+MinimizeBtn.BackgroundColor3 = Color3.fromRGB(70,120,255)
+Instance.new("UICorner", MinimizeBtn).CornerRadius = UDim.new(0,12)
+
+local CloseBtn = Instance.new("TextButton", TopBar)
+CloseBtn.Text = "×"
+CloseBtn.Size = UDim2.new(0,35,0,35)
+CloseBtn.Position = UDim2.new(1,-35,0,0)
+CloseBtn.TextColor3 = Color3.fromRGB(255,255,255)
+CloseBtn.TextSize = 20
+CloseBtn.BackgroundColor3 = Color3.fromRGB(255,70,70)
+Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0,12)
+
+local ContentFrame = Instance.new("Frame", MainFrame)
+ContentFrame.Size = UDim2.new(1,-20,1,-55)
+ContentFrame.Position = UDim2.new(0,10,0,45)
+ContentFrame.BackgroundTransparency = 1
+local UIList = Instance.new("UIListLayout", ContentFrame)
+UIList.Padding = UDim.new(0,8)
+UIList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+-- Função criar botão
+local function CreateButton(name, callback)
+	local Btn = Instance.new("TextButton")
+	Btn.Text = name
+	Btn.Font = Enum.Font.GothamMedium
+	Btn.TextSize = 16
+	Btn.TextColor3 = Color3.fromRGB(255,255,255)
+	Btn.BackgroundColor3 = Color3.fromRGB(60,90,180)
+	Btn.Size = UDim2.new(0,280,0,35)
+	Instance.new("UICorner", Btn).CornerRadius = UDim.new(0,10)
+	Btn.MouseEnter:Connect(function() Btn.BackgroundColor3 = Color3.fromRGB(80,110,200) end)
+	Btn.MouseLeave:Connect(function() Btn.BackgroundColor3 = Color3.fromRGB(60,90,180) end)
+	Btn.Parent = ContentFrame
+	if callback then
+		Btn.MouseButton1Click:Connect(callback)
+	end
+end
+
+-- ==============================
+-- Botões do painel
+-- ==============================
+CreateButton("Save📌", function()
+	if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+		savedPosition = LocalPlayer.Character.HumanoidRootPart.CFrame
+		game.StarterGui:SetCore("SendNotification",{Title="Whater Hub💧"; Text="Posição salva!📌"; Duration=2})
+	end
+end)
+
+CreateButton("Teleport", function()
+	if savedPosition then
+		LocalPlayer.Character.HumanoidRootPart.CFrame = savedPosition
+	else
+		game.StarterGui:SetCore("SendNotification",{Title="Whater Hub💧"; Text="SALVAR POSIÇÃO..."; Duration=2})
+	end
+end)
+
+CreateButton("Anti-AFK", function()
+	game.StarterGui:SetCore("SendNotification",{Title="Whater Hub💧"; Text="Anti-AFK Ativado ✅"; Duration=2})
+	spawn(function()
+		while true do
+			wait(30)
+			VirtualUser:CaptureController()
+			VirtualUser:ClickButton2(Vector2.new())
+		end
+	end)
+end)
+
+CreateButton("WalkSpeed", function()
+	local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+	if not hum then return end
+	if not walkSpeedActive then
+		defaultWalkSpeed = hum.WalkSpeed
+		hum.WalkSpeed = 50
+		walkSpeedActive = true
+		game.StarterGui:SetCore("SendNotification",{Title="Whater Hub💧"; Text="WalkSpeed ativado 🚀"; Duration=2})
+	else
+		hum.WalkSpeed = defaultWalkSpeed
+		walkSpeedActive = false
+		game.StarterGui:SetCore("SendNotification",{Title="Whater Hub💧"; Text="WalkSpeed desativado 🛑"; Duration=2})
+	end
+end)
+
+CreateButton("FPS⚡️", function()
+	if not optimized then
+		for _,obj in pairs(Workspace:GetDescendants()) do
+			if obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Smoke") or obj:IsA("Fire") then
+				pcall(function() obj.Enabled = false end)
+			elseif obj:IsA("Decal") or obj:IsA("Texture") then
+				pcall(function() obj.Transparency = 1 end)
+			elseif obj:IsA("MeshPart") or obj:IsA("Part") then
+				pcall(function() obj.Material = Enum.Material.SmoothPlastic end)
+			end
+		end
+		Lighting.GlobalShadows = false
+		Lighting.FogEnd = 9e9
+		Lighting.Brightness = 2
+		optimized = true
+		game.StarterGui:SetCore("SendNotification",{Title="Whater Hub💧"; Text="FPS otimizado ⚡️"; Duration=2})
+	else
+		game.StarterGui:SetCore("SendNotification",{Title="Whater Hub💧"; Text="Já está otimizado"; Duration=2})
+	end
+end)
+
+CreateButton("DR Elevator", function()
+	local Char = LocalPlayer.Character
+	if not Char then return end
+	local HRP = Char:FindFirstChild("HumanoidRootPart")
+	if not HRP then return end
+
+	if not elevatorActive then
+		elevatorActive = true
+		elevatorBlock = Instance.new("Part")
+		elevatorBlock.Size = Vector3.new(6,1,6)
+		elevatorBlock.Anchored = true
+		elevatorBlock.CanCollide = true
+		elevatorBlock.Material = Enum.Material.Neon
+		elevatorBlock.Color = Color3.fromRGB(0,170,255)
+		elevatorBlock.CFrame = HRP.CFrame * CFrame.new(0,-3,0)
+		elevatorBlock.Parent = Workspace
+
+		elevatorConnection = RunService.RenderStepped:Connect(function()
+			if elevatorActive and HRP and elevatorBlock then
+				local pos = HRP.Position
+				elevatorBlock.CFrame = CFrame.new(pos.X,pos.Y-3,pos.Z)
+				elevatorBlock.CFrame = elevatorBlock.CFrame + Vector3.new(0,0.5,0)
+				HRP.CFrame = CFrame.new(HRP.Position.X, elevatorBlock.Position.Y + 3, HRP.Position.Z)
+			end
+		end)
+		game.StarterGui:SetCore("SendNotification",{Title="Whater Hub💧"; Text="DR Elevator ativado ⬆️"; Duration=2})
+	else
+		elevatorActive = false
+		if elevatorBlock then elevatorBlock:Destroy() end
+		if elevatorConnection then elevatorConnection:Disconnect() end
+		game.StarterGui:SetCore("SendNotification",{Title="Whater Hub💧"; Text="DR Elevator desativado 🛑"; Duration=2})
+	end
+end)
+
+-- Minimizar
+local minimized = false
+MinimizeBtn.MouseButton1Click:Connect(function()
+	minimized = not minimized
+	if minimized then
+		ContentFrame.Visible = false
+		MainFrame.Size = UDim2.new(0,330,0,35)
+	else
+		ContentFrame.Visible = true
+		MainFrame.Size = UDim2.new(0,330,0,330)
+	end
+end)
+
+-- Fechar
+CloseBtn.MouseButton1Click:Connect(function()
+	MainFrame.Visible = false
+end)
